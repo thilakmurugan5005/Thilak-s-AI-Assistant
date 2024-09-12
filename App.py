@@ -7,7 +7,7 @@ from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
 from langchain_community.embeddings import OpenAIEmbeddings
 from Create_DB import embeddings
-
+from pydantic_settings import BaseSettings
 api_key = st.secrets["OPENAI_API_KEY"]
 
 #In this demo we will explore using RetirvalQA chain to retrieve relevant documents and send these as a context in a query.
