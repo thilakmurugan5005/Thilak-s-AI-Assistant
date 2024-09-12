@@ -6,7 +6,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 from langchain_openai import ChatOpenAI
 from langchain_community.embeddings import OpenAIEmbeddings
-
+from Create_DB import embeddings
 
 api_key = st.secrets["OPENAI_API_KEY"]
 
@@ -19,6 +19,7 @@ api_key = st.secrets["OPENAI_API_KEY"]
 #Step 1 - this will set up chain , to be called later
 
 def create_chain():
+    embeddings()
     client = chromadb.HttpClient(host="127.0.0.1",settings=Settings(allow_reset=True))
 
     embeddings = OpenAIEmbeddings(openai_api_key=api_key,
