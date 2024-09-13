@@ -1,95 +1,120 @@
-import chromadb
-from langchain_community.vectorstores import Chroma
-from chromadb.config import Settings
-
+import streamlit as st
+import os
+from dotenv import load_dotenv
+from langchain_community.vectorstores import FAISS
+from langchain_openai import OpenAIEmbeddings, ChatOpenAI
+from langchain.chains.question_answering import load_qa_chain
+from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain_openai import ChatOpenAI
-from langchain_community.embeddings import OpenAIEmbeddings
-from Create_DB import embeddings
-from pydantic_settings import BaseSettings
+from test import Create_DB
+from uuid import uuid4
+
+
+#unique_id = uuid4().hex[0:8]
+#os.environ["LANGCHAIN_TRACING_V2"] = "true"
+#os.environ["LANGCHAIN_PROJECT"] = f"Testi - {unique_id}"
+#os.environ["LANGCHAIN_ENDPOINT"] = "https://api.smith.langchain.com"
+#os.environ["LANGCHAIN_API_KEY"] = "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"
+
+# Load .env file
+##load_dotenv()
+
+# Access API key
+#api_key = os.getenv('API_KEY')
+
 api_key = st.secrets["OPENAI_API_KEY"]
 
-#In this demo we will explore using RetirvalQA chain to retrieve relevant documents and send these as a context in a query.
-# We will use Chroma vectorstore.
+st.set_page_config(page_title="Thilak's AI Buddy", layout="wide")
 
+# Add custom CSS for centering the header
+st.markdown(
+    """
+    <style>
+    .centered-header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100px;
+        font-size: 3rem;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
+# Initialize the embeddings and FAISS database
+Create_DB()
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=api_key)
+new_db = FAISS.load_local("index_test3", embeddings, allow_dangerous_deserialization=True)
 
+def get_conversational_chain(memory):
+    prompt_template = """
+    You are an AI chatbot, helping to answer users about Thilak's details. Answer the question as detailed as possible from the provided context. If the answer is not in
+    the provided context about Thilak, say "Sorry, I dont know. Ask some other question". If they ask about another person please say ,"Sorry, I dont know. Please ask about Thilak\n I am Thilak's AI Buddy.!" Don't provide incorrect information.
+    If they ask about work experience give answer in bullet points.\n\n
+    Context:\n {context}?\n
+    Question: \n{question}\n
 
-#Step 1 - this will set up chain , to be called later
+    Answer:
+    """
+    model = ChatOpenAI(model="gpt-3.5-turbo", openai_api_key=api_key, temperature=0)
+    #retv = new_db
+    prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
+    chain = ConversationalRetrievalChain.from_llm(
+        llm=model,
+        retriever=new_db.as_retriever(),
+        memory = memory,
+        combine_docs_chain_kwargs={"prompt": prompt}
+        )
+    return chain
 
-def create_chain():
-    embeddings()
-    client = chromadb.HttpClient(host="127.0.0.1",settings=Settings(allow_reset=True))
+# Main function
+def main():
+    st.markdown('<div class="centered-header">Thilak\'s AI Chatbot</div>', unsafe_allow_html=True)
 
-    embeddings = OpenAIEmbeddings(openai_api_key=api_key,
-                                  model="text-embedding-3-small")
+    # Initialize memory and vectorstore in session state
+    if "memory" not in st.session_state:
+        st.session_state.memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    
+    if "vectorstore" not in st.session_state:
+        st.session_state.vectorstore = None
 
-    db = Chroma(client=client, embedding_function=embeddings)
-    #retv = db.as_retriever(search_type="mmr", search_kwargs={"k": 7})
-    retv = db.as_retriever(search_kwargs={"k": 3})
+    # Initialize chat messages in session state
+    if "messages" not in st.session_state:
+        # Default first message from the assistant
+        st.session_state.messages = [{"role": "assistant", "content": "Hii Buddy.! I am Thilak's AI Assistant. Ask me about Thilak"}]
+    
+    # Display chat history
+    #for message in st.session_state.messages:
+     #   with st.chat_message(message["role"]):
+     #       st.markdown(message["content"])
 
-    llm = ChatOpenAI(model="gpt-3.5-turbo", openai_api_key=api_key,
-                 temperature=0)
+    # Display the conversation in the chat format
+    for message in st.session_state.messages:
+        if message["role"] == "user":
+            st.chat_message("user").write(message["content"])
+        else:
+            st.chat_message("assistant").write(message["content"])
 
-    memory = ConversationBufferMemory(llm=llm, memory_key="chat_history", return_messages=True, output_key='answer')
+    # Get user input
+    if user_question := st.chat_input("Ask a question about Thilak"):
+        # Add user message to chat history
+                # Display user's input in chat
+        with st.chat_message("user"):
+            st.markdown(user_question)
+        #st.session_state.messages.append({"role": "user", "content": user_question})
+        chain = get_conversational_chain(st.session_state.memory)
+        response = chain.invoke({"question": user_question})
+        print("Responce :",response)
+        bot_response = response["answer"]
 
-    qa = ConversationalRetrievalChain.from_llm(llm, retriever=retv , memory=memory,
-                                               return_source_documents=True)
-    return qa
+        if bot_response:  # Check if there's a valid response
+            st.session_state.messages.append({"role": "user", "content": user_question})
+            st.session_state.messages.append({"role": "assistant", "content": bot_response})
 
-#Step 2 - create chain, here we create a ConversationalRetrievalChain.
+        st.chat_message("assistant").write(bot_response)
 
-chain = create_chain()
-
-#Step 3 - here we declare a chat function
-def chat(user_message):
-    # generate a prediction for a prompt
-    bot_json = chain.invoke({"question": user_message})
-    print(bot_json)
-    return {"bot_response": bot_json}
-
-#Step 4 - here we setup Streamlit text input and pass input text to chat function.
-# chat function returns the response and we print it.
-
+# Run the app
 if __name__ == "__main__":
-    import streamlit as st
-
-    # Center both the main title and subheader
-    st.markdown(
-        """
-        <div style="text-align: center;">
-            <h2>Thilak's AI Assistant</h2>
-            <h3>------Ask me a question about Thilak------</h3>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
-
-    # Create two columns
-    col1, col2 = st.columns([4, 1])
-
-    # User input with chat functionality
-    user_input = st.chat_input()
-
-    with col1:
-
-        # Check if session state for messages exists
-        if "messages" not in st.session_state:
-            st.session_state.messages = []
-
-        # If user input is provided, generate a bot response
-        if user_input:
-            bot_response = chat(user_input)
-            st.session_state.messages.append({"role": "chatbot", "content": bot_response})
-
-            # Loop through messages and display them
-            for message in st.session_state.messages:
-                st.chat_message("user")
-                st.write("Question: ", message['content']['bot_response']['question'])
-
-                st.chat_message("assistant")
-                st.write("Answer: ", message['content']['bot_response']['answer'])
-
-
-
+    main()
