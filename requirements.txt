@@ -4,3 +4,4 @@ pypdf
 faiss
 faiss-cpu
 streamlit
+--upgrade pip
