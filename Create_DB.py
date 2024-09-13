@@ -9,7 +9,7 @@ import streamlit as st
 api_key = st.secrets["OPENAI_API_KEY"]
 def Create_DB():
     # Step 1 - load and split documents
-    pdf_loader = PyPDFDirectoryLoader("./Personal_data.pdf")
+    pdf_loader = PyPDFDirectoryLoader("Personal_data.pdf")
     loaders = [pdf_loader]
 
     documents = []
