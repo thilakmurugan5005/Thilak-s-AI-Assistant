@@ -4,7 +4,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import FAISS
 import faiss
 import numpy as np
-import st
+import streamlit as st
 
 api_key = st.secrets["OPENAI_API_KEY"]
 def Create_DB():
