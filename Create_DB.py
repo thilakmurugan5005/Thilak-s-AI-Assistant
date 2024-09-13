@@ -19,7 +19,7 @@ def Create_DB():
     all_documents = text_splitter.split_documents(documents)
 
     # Step 2 - Create embedding endpoint
-    embeddings = OpenAIEmbeddings(model="text-embedding-3-small",openai_api_key=api_key")
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small",openai_api_key=api_key)
 
     # create vector db
     vector_db=FAISS.from_documents(all_documents, embedding=embeddings)
