@@ -6,7 +6,7 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from test import Create_DB
+from Create_DB import Create_DB
 from uuid import uuid4
 
 
