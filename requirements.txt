@@ -3,3 +3,4 @@ langchain-openai
 pypdf
 faiss
 faiss-cpu
+streamlit
