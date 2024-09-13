@@ -1,17 +1,15 @@
-from langchain_community.vectorstores.chroma import Chroma
-from langchain_community.vectorstores import Chroma
-from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.document_loaders import PyPDFDirectoryLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-import chromadb
-from chromadb.config import Settings
+from langchain_community.vectorstores import FAISS
+import faiss
+import numpy as np
 
 api_key = st.secrets["OPENAI_API_KEY"]
-def embeddings():
+def Create_DB():
     # Step 1 - load and split documents
-    pdf_loader = PyPDFDirectoryLoader("D:/code/Data/Personal_chatbot_data")
+    pdf_loader = PyPDFDirectoryLoader("/workspaces/Thilaks-AI-Assistant/Data")
     loaders = [pdf_loader]
-    print(loaders)
 
     documents = []
     for loader in loaders:
@@ -20,37 +18,13 @@ def embeddings():
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=100)
     all_documents = text_splitter.split_documents(documents)
 
+    # Step 2 - Create embedding endpoint
+    embeddings = OpenAIEmbeddings(model="text-embedding-3-small",openai_api_key=api_key")
+
+    # create vector db
+    vector_db=FAISS.from_documents(all_documents, embedding=embeddings)
+    # save vector db
+    vector_db.save_local("index_test3")
 
 
-    # Set the batch size
-    batch_size = 96
-
-    # Calculate the number of batches
-    num_batches = len(all_documents) // batch_size + (len(all_documents) % batch_size > 0)
-    print(num_batches)
-
-    #Step 2 - Create embedding endpoint
-    embeddings = OpenAIEmbeddings(openai_api_key=api_key)
-
-    #Setting up the Chroma db path
-    db = Chroma(embedding_function=embeddings , persist_directory="./chromadb")
-    retv = db.as_retriever()
-
-
-
-
-    # Iterate over batches
-    for batch_num in range(num_batches):
-        # Calculate start and end indices for the current batch
-        start_index = batch_num * batch_size
-        end_index = (batch_num + 1) * batch_size
-        # Extract documents for the current batch
-        batch_documents = all_documents[start_index:end_index]
-        # Your code to process each document goes here
-        retv.add_documents(batch_documents)
-        print(start_index, end_index)
-
-    #Step 4 - here we persist the collection
-    #Since Chroma 0.4.x the manual persistence method is no longer supported as docs are automatically persisted.
-    db.persist()
-
+    return 
