@@ -45,7 +45,7 @@ st.markdown(
 # Initialize the embeddings and FAISS database
 Create_DB()
 embeddings = OpenAIEmbeddings(model="text-embedding-3-small", openai_api_key=api_key)
-new_db = FAISS.load_local("index_test3", embeddings, allow_dangerous_deserialization=True)
+new_db = FAISS.load_local("index_te123", embeddings, allow_dangerous_deserialization=True)
 
 def get_conversational_chain(memory):
     prompt_template = """
