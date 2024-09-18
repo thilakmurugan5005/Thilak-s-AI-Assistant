@@ -1,6 +1,6 @@
 # Thilak-AI-Assistant:
 
-## Try it out: https://document-ai-chatbot-using-rag-memory.streamlit.app/
+## Try it out: https://thilaks-ai-assistant-chatbot.streamlit.app/
 
 This project is a Personal Chatbot designed to provide detailed, accurate responses to questions about my education, professional experience, certifications, and other relevant personal information. The chatbot is powered by Generative AI and Advanced Retrival Augmentation Generation(RAG) and can engage in meaningful conversations, addressing both general and specific queries related to my career and background.
 
