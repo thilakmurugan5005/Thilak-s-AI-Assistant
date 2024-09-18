@@ -10,12 +10,12 @@ This project is a Personal Chatbot designed to provide detailed, accurate respon
 **Contextual Conversations:** The chatbot maintains context throughout a session, ensuring that the conversation flows naturally.
 **Customized for Personal Use:** This chatbot is tailored specifically to answer questions about my personal and professional journey.
 
-##Use Cases
+## Use Cases
 **Career Portfolio:** Visitors can ask questions about my career achievements, past roles, and skills.
 **Interview Preparation:** A tool for HR professionals or recruiters to quickly retrieve information related to my qualifications.
 **Learning Journey:** Users can explore my educational path, including courses and certifications I've completed.
 
-##Future Enhancements
+## Future Enhancements
 Incorporation of voice-based interactions.
 Ability to provide interactive links to portfolio projects and certificates.
 Adding data visualization features to illustrate career milestones and accomplishments.
