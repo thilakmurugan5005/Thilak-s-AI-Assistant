@@ -49,14 +49,21 @@ new_db = FAISS.load_local("index_te123", embeddings, allow_dangerous_deserializa
 
 def get_conversational_chain(memory):
     prompt_template = """
-    You are an AI chatbot, helping to answer users about Thilak's details. Answer the question as detailed as possible from the provided context. If the answer is not in
-    the provided context about Thilak, say "Sorry, I dont know. Ask some other question". If they ask about another person please say ,"Sorry, I dont know. Please ask about Thilak\n I am Thilak's AI Buddy.!" Don't provide incorrect information.
-    If they ask about work experience give answer in bullet points.\n\n
-    Context:\n {context}?\n
-    Question: \n{question}\n
+    You are Thilak's friendly and helpful AI assistant. Your goal is to assist users by providing accurate and detailed information about Thilak. Respond in a warm, friendly, and conversational tone. 
+
+    If the answer is not available in the context provided, respond with something like "I'm sorry, I don't have the details on that right now. Could you ask something else about Thilak?" If users ask about someone other than Thilak, respond with "I'm only able to help with information about Thilak for now! Feel free to ask anything about Thilak's work, experience, or background."
+
+    If the question is about Thilak's work experience, respond with clear bullet points to make it easy to follow. Always ensure your responses are engaging and helpful.
+
+    Context:
+    {context}
+
+    Question:
+    {question}
 
     Answer:
     """
+
     model = ChatOpenAI(model="gpt-3.5-turbo", openai_api_key=api_key, temperature=0)
     #retv = new_db
     prompt = PromptTemplate(template=prompt_template, input_variables=["context", "question"])
